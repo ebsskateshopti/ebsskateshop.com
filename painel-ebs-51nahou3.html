@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel | EBS Skateshop</title>
+<style>
+:root{--bg:#1c1d20;--pn:#26282b;--ln:#3d4045;--tx:#fff;--mu:#bdc0c6;--ac:#F8AFA5;--rd:#ff7b7b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:0 1rem}
+header{position:sticky;top:0;z-index:5;background:#111214;border-bottom:1px solid var(--ln)}
+header .wrap{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;padding-block:.7rem}
+header h1{font-size:1.1rem;margin:0 auto 0 0}
+.tabs{display:flex;gap:.3rem;overflow-x:auto;padding:.6rem 0}
+.tab{background:none;border:0;color:var(--mu);padding:.6rem .9rem;min-height:44px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.tab[aria-current=true]{background:#fff;color:#111;font-weight:700}
+.b{min-height:44px;padding:0 1rem;border-radius:6px;border:2px solid #fff;background:#fff;color:#111;font-weight:700;cursor:pointer}
+.b.s{background:none;color:#fff;border-color:#6a6e75}.b.p{background:var(--ac);border-color:var(--ac)}.b.d{background:none;color:var(--rd);border-color:var(--rd)}
+.b.sm{min-height:36px;padding:0 .7rem;font-size:.9rem}.b:disabled{opacity:.5;cursor:default}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:1rem;margin:0 0 1rem}
+h2{font-size:1.25rem;margin:1.2rem 0 .8rem}h3{font-size:1.05rem;margin:0 0 .6rem}
+label{display:block;font-size:.88rem;color:var(--mu);margin:.7rem 0 .25rem}
+input[type=text],input[type=number],input[type=search],input[type=password],select,textarea{width:100%;min-height:44px;padding:.5rem .7rem;background:#111214;color:#fff;border:1px solid #55595f;border-radius:6px}
+textarea{min-height:90px}input[type=color]{width:64px;height:44px;border:1px solid #55595f;border-radius:6px;background:#111214;padding:2px}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--ac);vertical-align:middle}.ck{display:flex;align-items:center;gap:.6rem;color:#fff;font-size:1rem;margin:.7rem 0}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}.row>*{flex:1 1 150px}.row>.b{flex:0 0 auto}
+.item{display:flex;gap:.8rem;align-items:center;padding:.6rem;border:1px solid var(--ln);border-radius:8px;margin:.5rem 0;background:#202225}
+.item img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:6px;flex:none}.item .sem{width:56px;height:56px;border-radius:6px;background:#333;flex:none}
+.item .t{flex:1;min-width:0}.item .t b{display:block;overflow:hidden;text-overflow:ellipsis}.item small{color:var(--mu)}
+.tag{display:inline-block;background:var(--ac);color:#111;border-radius:4px;padding:0 .4rem;font-size:.75rem;font-weight:700;margin-left:.3rem}
+.thumb{max-width:220px;max-height:160px;background:#fff;border-radius:6px;display:block;margin:.4rem 0;object-fit:contain}
+.aviso{background:#3a2f1c;border:1px solid #8a6d2f;border-radius:8px;padding:.7rem 1rem;margin:.8rem 0;color:#ffe3a3}
+.ok{background:#1d3324;border:1px solid #2f7a49;color:#bff0cf}.err{background:#3a1f1f;border-color:#8a2f2f;color:#ffc9c9}
+.mu{color:var(--mu)}small.mu{display:block;margin-top:.25rem}
+.dias{display:flex;gap:.3rem;flex-wrap:wrap}.dias label{margin:0;display:flex;gap:.25rem;align-items:center;color:#fff;border:1px solid #55595f;border-radius:6px;padding:.3rem .5rem}
+details{margin:.6rem 0}summary{cursor:pointer;color:var(--ac)}ol{padding-left:1.2rem}pre{white-space:pre-wrap;background:#111214;padding:.6rem;border-radius:6px}
+#log{white-space:pre-wrap;font-size:.9rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="js/dados.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const e = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const LS = "ebs-admin", LSC = "ebs-admin-cfg", enc = new TextEncoder();
+let dados, imgs = {}, enviadas = [], publicado = "", cfg = null, aba = "produtos", ed = null, edI = -1, edModo = "padrao", busca = "", filtroCat = "", msgs = [], ocupado = false;
+const TEMA_PADRAO = { acc: "#F8AFA5", fundo: "#26282B", cartao: "#303236" };
+const TEMAS_SLIDE = [["s-asfalto", "Grafite com brilho"], ["s-creme", "Cinza médio"], ["s-vinho", "Quase preto"], ["s-grafite", "Grafite claro"], ["s-vermelho", "Preto"]];
+const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+/* ---------- utilidades ---------- */
+const slug = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "item";
+const unico = (base, usados) => { let s = base, n = 2; while (usados.includes(s)) s = base + "-" + n++; return s; };
+const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode(...u8.subarray(i, i + 8192)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const gerarDadosJs = d => "/* Dados do site: gerado e editado pelo painel (painel do dono). Pode ser editado à mão, mas mantenha o formato. */\nwindow.DADOS = " + JSON.stringify(d, null, 1) + ";\n";
+const lerDadosJs = t => JSON.parse(t.match(/window\.DADOS\s*=\s*([\s\S]*?);\s*$/)[1]);
+const cat = s => dados.categorias.find(c => c.slug === s);
+const src = p => imgs[p] || p;
+const brl = n => n == null ? "Consultar" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const sujo = () => JSON.stringify(dados) !== publicado;
+function salvarEstado() { try { localStorage.setItem(LS, JSON.stringify({ dados, imgs, enviadas })); } catch (_) { aviso("A memória do navegador encheu. Publique para liberar espaço."); } }
+const msgsHtml = () => msgs.slice(-4).map(m => `<div class="aviso ${m.tipo}">${e(m.t)}</div>`).join("");
+function aviso(t, tipo = "") { msgs.push({ t, tipo }); const l = $("#msgs"); if (l) l.innerHTML = msgsHtml(); }
+function getK(p) { let o = p.startsWith("ed.") ? ed : dados; for (const k of (p.startsWith("ed.") ? p.slice(3) : p).split(".")) { if (o == null) return undefined; o = o[k]; } return o; }
+function setK(p, v) { let o = p.startsWith("ed.") ? ed : dados; const ks = (p.startsWith("ed.") ? p.slice(3) : p).split("."), ult = ks.pop(); for (const k of ks) o = o[k]; if (v === undefined) delete o[ult]; else o[ult] = v; }
+
+/* ---------- criptografia da conexão (token guardado com a senha do dono) ---------- */
+async function chave(senha, salt) { const k = await crypto.subtle.importKey("raw", enc.encode(senha), "PBKDF2", false, ["deriveKey"]); return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" }, k, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]); }
+async function cifrar(txt, senha) { const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)); const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await chave(senha, salt), enc.encode(txt))); return { salt: b64(salt), iv: b64(iv), ct: b64(ct) }; }
+async function decifrar(o, senha) { const r = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(o.iv) }, await chave(senha, unb64(o.salt)), unb64(o.ct)); return new TextDecoder().decode(r); }
+
+/* ---------- GitHub ---------- */
+const gh = (caminho, opt = {}) => fetch(`https://api.github.com/repos/${cfg.repo}/contents/${caminho}` + (opt.method === "PUT" ? "" : `?ref=${encodeURIComponent(cfg.branch)}`), { ...opt, headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" } });
+async function erroGh(r) { let m = ""; try { m = (await r.json()).message; } catch (_) {} return r.status === 401 ? "Token inválido ou vencido (401)." : r.status === 403 || r.status === 404 ? `Sem permissão ou repositório não encontrado (${r.status}). Confira o nome do repositório e as permissões do token.` : `Erro do GitHub (${r.status}) ${m}`; }
+async function lerRemoto(caminho) { const r = await gh(caminho); if (!r.ok) throw new Error(await erroGh(r)); const j = await r.json(); return new TextDecoder().decode(unb64(j.content.replace(/\s/g, ""))); }
+async function gravar(caminho, base64, msg) {
+  const r0 = await gh(caminho); let sha; if (r0.ok) sha = (await r0.json()).sha; else if (r0.status !== 404) throw new Error(await erroGh(r0));
+  const r = await gh(caminho, { method: "PUT", body: JSON.stringify({ message: msg, content: base64, branch: cfg.branch, sha }) });
+  if (!r.ok) throw new Error(await erroGh(r));
+}
+
+/* ---------- imagens ---------- */
+async function lerImagem(file, max) {
+  const bmp = await createImageBitmap(file), k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0, c.width, c.height);
+  let url = c.toDataURL("image/webp", 0.86), ext = "webp"; if (!url.startsWith("data:image/webp")) { url = c.toDataURL("image/jpeg", 0.88); ext = "jpg"; }
+  return { url, ext };
+}
+
+/* ---------- telas ---------- */
+function telaLogin() {
+  const salvo = localStorage.getItem(LSC);
+  $("#app").innerHTML = `<div class="wrap" style="max-width:560px;padding-block:2rem"><h1>Painel da EBS Skateshop</h1>
+  <p class="mu">Aqui o dono adiciona e tira produtos, muda preços, fotos, banners, textos e horários do site.</p><div id="msgs"></div>
+  <div class="card">${salvo ? `<h3>Entrar</h3><label for="senha">Senha do painel</label><input id="senha" type="password" autocomplete="current-password"><div class="row" style="margin-top:1rem"><button class="b" data-a="entrar">Entrar</button><button class="b d" data-a="esquecer">Esquecer conexão</button></div>`
+  : `<h3>Conectar ao GitHub (uma vez só)</h3><label for="repo">Repositório do site (usuario/nome)</label><input id="repo" type="text" placeholder="ebsskateshop/site">
+  <label for="branch">Branch</label><input id="branch" type="text" value="main"><label for="token">Token de acesso do GitHub</label><input id="token" type="password" autocomplete="off">
+  <label for="senha">Crie uma senha para este painel (mínimo 10 caracteres)</label><input id="senha" type="password" autocomplete="new-password"><small class="mu">O token fica guardado neste aparelho, criptografado com essa senha. Sem a senha, ninguém usa o painel.</small>
+  <div class="row" style="margin-top:1rem"><button class="b" data-a="conectar">Salvar e entrar</button></div>`}
+  </div>
+  <details class="card"><summary>Como conectar (passo a passo)</summary><ol><li>Crie uma conta grátis em github.com e um repositório com os arquivos do site (o .zip entregue).</li>
+  <li>No repositório: <b>Settings → Pages → Deploy from a branch → main / (root)</b>. O site fica em usuario.github.io/nome.</li>
+  <li>Crie o token: <b>GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate</b>. Em <i>Repository access</i> escolha só o repositório do site. Em <i>Permissions → Contents</i> marque <b>Read and write</b>.</li>
+  <li>Volte aqui, preencha o nome do repositório, cole o token e crie uma senha.</li></ol></details></div>`;
+}
+function shell() {
+  const abas = [["produtos", "Produtos"], ["categorias", "Categorias e marcas"], ["banners", "Banners"], ["loja", "Loja e textos"], ["imagens", "Imagens do site"], ["publicar", "Publicar"]];
+  $("#app").innerHTML = `<header><div class="wrap"><h1>Painel EBS</h1><span id="status" class="mu"></span><button class="b s sm" data-a="previa">Ver prévia</button><button class="b p sm" data-a="ir-publicar">Publicar</button></div>
+  <div class="wrap"><nav class="tabs">${abas.map(([k, t]) => `<button class="tab" data-a="aba" data-i="${k}" aria-current="${aba === k}">${t}</button>`).join("")}</nav></div></header>
+  <main class="wrap" id="conteudo" style="padding-block:1rem 4rem"></main>`;
+  render();
+}
+function mostrarStatus() { const s = $("#status"); if (s) s.textContent = (cfg ? "Conectado" : "Sem GitHub") + " · " + (sujo() ? "alterações não publicadas" : "tudo publicado"); }
+const inp = (k, lab, o = {}) => { let v = getK(k); if (o.t === "lista") v = (v || []).join(", "); if (o.t === "linhas") v = (v || []).join("\n"); if (o.t === "num") v = v == null ? "" : String(v).replace(".", ",");
+  const at = `data-k="${k}"${o.t ? ` data-t="${o.t}"` : ""}${o.r ? ' data-r="1"' : ""}`;
+  return `<label>${lab}</label>` + (o.area ? `<textarea ${at}>${e(v ?? "")}</textarea>` : `<input type="${o.type || "text"}" ${at} value="${e(v ?? "")}" placeholder="${e(o.ph || "")}" ${o.type === "color" ? "" : ""}>`) + (o.dica ? `<small class="mu">${o.dica}</small>` : ""); };
+const ck = (k, lab) => `<label class="ck"><input type="checkbox" data-k="${k}" ${getK(k) ? "checked" : ""}> ${lab}</label>`;
+const foto = (k, pasta, max, lab, podeTirar = true) => { const v = getK(k); return `<label>${lab}</label>${v ? `<img class="thumb" src="${e(src(v))}" alt="">` : `<small class="mu">Sem foto.</small>`}<div class="row"><input type="file" accept="image/*" data-up="${k}" data-pasta="${pasta}" data-max="${max}">${v && podeTirar ? `<button class="b d sm" data-a="rmimg" data-k="${k}">Tirar foto</button>` : ""}</div>`; };
+
+function render() {
+  const c = $("#conteudo"); if (!c) return;
+  c.innerHTML = { produtos: vProdutos, categorias: vCategorias, banners: vBanners, loja: vLoja, imagens: vImagens, publicar: vPublicar }[aba](); mostrarStatus();
+}
+function vProdutos() {
+  if (ed) return formProduto();
+  let L = dados.produtos.map((p, i) => ({ p, i })).filter(({ p }) => (!filtroCat || p.cat === filtroCat) && (!busca || p.nome.toLowerCase().includes(busca.toLowerCase())));
+  return `<div class="row"><input type="search" id="busca" placeholder="Buscar produto" value="${e(busca)}"><select id="fcat"><option value="">Todas as categorias</option>${dados.categorias.map(c => `<option value="${c.slug}" ${filtroCat === c.slug ? "selected" : ""}>${e(c.nome)}</option>`).join("")}</select><button class="b p" data-a="novo">+ Novo produto</button></div>
+  <p class="mu">${dados.produtos.length} produtos · ${dados.produtos.filter(p => p.promo).length} na Quinta da Oferta</p>` +
+  (L.map(({ p, i }) => { const c = cat(p.cat); return `<div class="item">${p.img ? `<img src="${e(src(p.img))}" alt="">` : `<div class="sem"></div>`}<div class="t"><b>${e(p.nome)}${p.novo ? '<span class="tag">Novo</span>' : ""}${p.promo ? '<span class="tag">Oferta</span>' : ""}${p.img ? "" : '<span class="tag" style="background:#ffd84d">sem foto: não aparece</span>'}</b><small>${e(c ? c.nome : "?")} · ${brl(p.preco)}</small></div><button class="b s sm" data-a="editar" data-i="${i}">Editar</button><button class="b d sm" data-a="excluir" data-i="${i}">Excluir</button></div>`; }).join("") || `<p class="mu">Nenhum produto encontrado.</p>`);
+}
+function formProduto() {
+  const c = cat(ed.cat), subs = c ? c.subs : [];
+  return `<h2>${edI < 0 ? "Novo produto" : "Editar produto"}</h2><div class="card">${inp("ed.nome", "Nome do produto")}
+  <div class="row"><div><label>Categoria</label><select data-k="ed.cat" data-r="1" data-limpa="sub">${dados.categorias.map(c => `<option value="${c.slug}" ${ed.cat === c.slug ? "selected" : ""}>${e(c.nome)}</option>`).join("")}</select></div>
+  <div><label>Marca</label><select data-k="ed.sub" data-marca="1">${subs.map(s => `<option value="${s[0]}" ${ed.sub === s[0] ? "selected" : ""}>${e(s[1])}</option>`).join("")}<option value="__nova">+ Nova marca...</option></select></div></div>
+  ${inp("ed.preco", "Preço (deixe vazio para \"consulte no WhatsApp\")", { t: "num", ph: "Ex.: 319,99" })}${inp("ed.desc", "Descrição curta (opcional)")}
+  ${inp("ed.ficha", "Ficha técnica (uma linha por item, opcional)", { t: "linhas", area: 1 })}
+  <label>Tamanhos</label><select id="modo" data-r="1"><option value="padrao" ${edModo === "padrao" ? "selected" : ""}>Padrão da categoria${c && c.tamanhos ? " (" + e(c.tamanhos.join(", ")) + ")" : " (sem tamanho)"}</option><option value="nenhum" ${edModo === "nenhum" ? "selected" : ""}>Sem seleção de tamanho</option><option value="custom" ${edModo === "custom" ? "selected" : ""}>Personalizado</option></select>
+  ${edModo === "custom" ? inp("ed.tamanhos", "Tamanhos separados por vírgula", { t: "lista", ph: "P, M, G" }) : ""}
+  ${ck("ed.novo", 'Mostrar selo "Novo"')}${ck("ed.promo", "Colocar na Quinta da Oferta")}${foto("ed.img", "produtos", 900, "Foto do produto")}
+  <div class="row" style="margin-top:1rem"><button class="b p" data-a="salvarprod">Salvar produto</button><button class="b s" data-a="cancelar">Cancelar</button></div></div>`;
+}
+function vCategorias() {
+  return `<div class="row"><p class="mu" style="flex:1">A ordem aqui é a ordem no site. Categoria sem produto fica escondida.</p><button class="b p" data-a="novacat">+ Nova categoria</button></div>` +
+  dados.categorias.map((c, i) => { const n = dados.produtos.filter(p => p.cat === c.slug).length; return `<div class="card"><div class="row"><h3 style="flex:1">${e(c.nome)} <span class="mu">(${n} produtos)</span></h3><button class="b s sm" data-a="subir" data-i="${i}" data-l="categorias">↑</button><button class="b s sm" data-a="descer" data-i="${i}" data-l="categorias">↓</button><button class="b d sm" data-a="rmcat" data-i="${i}">Excluir</button></div>
+  <div class="row"><div>${inp(`categorias.${i}.nome`, "Nome")}</div><div>${inp(`categorias.${i}.curto`, "Nome curto no menu (opcional)")}</div></div>
+  ${inp(`categorias.${i}.tamanhos`, "Tamanhos padrão (separe por vírgula; vazio = sem seleção)", { t: "lista", ph: "Ex.: 8.0, 8.25, 8.5" })}
+  ${foto(`categorias.${i}.capa`, "capas", 1000, "Foto da capa (aparece na página inicial)")}
+  <label>Marcas desta categoria</label>${c.subs.map((s, j) => `<div class="row" style="margin:.3rem 0"><input type="text" data-k="categorias.${i}.subs.${j}.1" value="${e(s[1])}"><button class="b d sm" data-a="rmsub" data-i="${i}" data-j="${j}">Remover</button></div>`).join("")}<button class="b s sm" data-a="novasub" data-i="${i}">+ Marca</button></div>`; }).join("");
+}
+function vBanners() {
+  const dest = [["#/", "Página inicial"], ...dados.categorias.map(c => ["#/c/" + c.slug, "Categoria: " + c.nome]), ["#/promocoes", "Quinta da Oferta"], ["#/contato", "Contato e horários"], ["zap", "WhatsApp (com mensagem)"], ["http", "Link externo"]];
+  return `<div class="row"><p class="mu" style="flex:1">Use *asteriscos* em volta de uma palavra para destacá-la em rosa. Ex.: Pronto pra *rolar*.</p><button class="b p" data-a="novoslide">+ Novo banner</button></div>` +
+  dados.slides.map((s, i) => `<div class="card"><div class="row"><h3 style="flex:1">Banner ${i + 1}</h3><button class="b s sm" data-a="subir" data-i="${i}" data-l="slides">↑</button><button class="b s sm" data-a="descer" data-i="${i}" data-l="slides">↓</button><button class="b d sm" data-a="rmslide" data-i="${i}">Excluir</button></div>
+  ${inp(`slides.${i}.titulo`, "Título")}${inp(`slides.${i}.texto`, "Texto")}${inp(`slides.${i}.marca`, "Frase em destaque (opcional)")}
+  <label>Fundo</label><select data-k="slides.${i}.tema">${TEMAS_SLIDE.map(([v, t]) => `<option value="${v}" ${s.tema === v ? "selected" : ""}>${t}</option>`).join("")}</select>
+  <label class="ck"><input type="checkbox" data-k="slides.${i}.visual" data-t="logo" ${s.visual === "logo" ? "checked" : ""}> Mostrar a logo no banner</label>${foto(`slides.${i}.img`, "banners", 1400, "Foto de fundo (opcional)")}
+  <label>Botões (até 2)</label>${(s.cta || []).map((b, j) => { const l = b[1], tipo = l.startsWith("zap:") ? "zap" : /^https?:/.test(l) ? "http" : l; return `<div class="row" style="margin:.4rem 0"><input type="text" data-k="slides.${i}.cta.${j}.0" value="${e(b[0])}" placeholder="Texto do botão"><select data-dest="slides.${i}.cta.${j}">${dest.map(([v, t]) => `<option value="${v}" ${tipo === v ? "selected" : ""}>${e(t)}</option>`).join("")}</select>${tipo === "zap" || tipo === "http" ? `<input type="text" data-destv="slides.${i}.cta.${j}" value="${e(tipo === "zap" ? l.slice(4) : l)}" placeholder="${tipo === "zap" ? "Mensagem" : "https://..."}">` : ""}<button class="b d sm" data-a="rmcta" data-i="${i}" data-j="${j}">Tirar</button></div>`; }).join("")}${(s.cta || []).length < 2 ? `<button class="b s sm" data-a="novacta" data-i="${i}">+ Botão</button>` : ""}</div>`).join("");
+}
+function vLoja() {
+  const d = dados;
+  return `<div class="card"><h3>Contato e endereço</h3>${inp("loja.nome", "Nome da loja")}<div class="row"><div>${inp("loja.ddd", "DDD", { ph: "91" })}</div><div>${inp("loja.fone", "WhatsApp (só números, sem DDD)", { ph: "985016702" })}</div></div>
+  ${inp("loja.endereco", "Endereço (rua, número, bairro)")}${inp("loja.cidade", "Cidade, estado e CEP")}${inp("loja.mapsUrl", "Link do Google Maps", { dica: "Cole o link de compartilhar do Maps." })}${inp("loja.instagram", "Instagram (sem @)")}</div>
+  <div class="card"><h3>Horários</h3>${d.loja.horarios.map((h, i) => `<div class="item" style="display:block"><div class="row"><input type="text" data-k="loja.horarios.${i}.rotulo" value="${e(h.rotulo)}" placeholder="Ex.: Segunda a sexta"><input type="text" data-k="loja.horarios.${i}.texto" value="${e(h.texto)}" placeholder="Ex.: 10h às 18h ou Fechado"><button class="b d sm" data-a="rmhora" data-i="${i}">Remover</button></div>
+  <div class="dias" style="margin-top:.5rem">${DIAS.map((n, k) => `<label><input type="checkbox" data-dia="${i}" value="${k}" ${h.dias.split(",").includes(String(k)) ? "checked" : ""}> ${n}</label>`).join("")}</div></div>`).join("")}<button class="b s sm" data-a="novahora">+ Horário</button><small class="mu">Marque os dias de cada linha: o site destaca o dia de hoje.</small></div>
+  <div class="card"><h3>Textos do site</h3>${inp("textos.faixa", "Faixa preta do topo")}${inp("textos.slogan", "Slogan")}${inp("textos.tituloCategorias", "Título da seção de categorias")}${inp("textos.tituloMarcas", "Título da seção de marcas")}
+  ${d.textos.info.map((x, i) => `<div class="row"><div>${inp(`textos.info.${i}.titulo`, "Faixa de informações " + (i + 1) + ": destaque")}</div><div>${inp(`textos.info.${i}.texto`, "Texto")}</div></div>`).join("")}</div>
+  <div class="card"><h3>Cores</h3><div class="row"><div>${inp("tema.acc", "Destaque", { type: "color" })}</div><div>${inp("tema.fundo", "Fundo", { type: "color" })}</div><div>${inp("tema.cartao", "Fundos escuros", { type: "color" })}</div><button class="b s sm" data-a="corpadrao">Voltar às cores originais</button></div></div>`;
+}
+function vImagens() {
+  return `<div class="card">${foto("imagens.logo", "site", 600, "Logo (aparece no topo e no primeiro banner)", false)}</div><div class="card">${foto("imagens.marcas", "site", 1400, "Imagem das marcas (seção \"Marcas na loja\")")}<small class="mu">Sem imagem, a seção some.</small></div>
+  <div class="card">${foto("imagens.fachada", "site", 1400, "Foto da fachada da loja")}<small class="mu">Sem foto, o bloco da fachada fica escondido.</small></div>`;
+}
+function vPublicar() {
+  const novas = Object.keys(imgs).filter(p => !enviadas.includes(p) && JSON.stringify(dados).includes(p));
+  return `<div id="msgs">${msgsHtml()}</div><div class="card"><h3>Publicar no site</h3><p>${sujo() ? "Há alterações que ainda não estão no site." : "O site está igual ao painel."} ${novas.length ? `${novas.length} foto(s) nova(s) serão enviadas.` : ""}</p>
+  ${cfg ? `<div class="row"><button class="b p" data-a="publicar" ${ocupado ? "disabled" : ""}>Publicar agora</button><button class="b s" data-a="recarregar">Carregar o que está no site</button></div><p class="mu">O site leva de 1 a 2 minutos para mostrar a mudança depois de publicar.</p>` : `<div class="aviso">Sem conexão com o GitHub não dá para publicar. Saia e conecte de novo.</div>`}
+  <pre id="log">${e(msgs.map(m => m.t).slice(-6).join("\n"))}</pre></div>
+  <div class="card"><h3>Backup e rascunho</h3><div class="row"><button class="b s" data-a="baixar">Baixar dados.js</button><button class="b d" data-a="descartar">Descartar alterações</button><button class="b s" data-a="sair">Sair do painel</button></div><small class="mu">As alterações ficam salvas neste navegador até você publicar. Fotos antigas que você trocar continuam guardadas no repositório.</small></div>`;
+}
+
+/* ---------- ações ---------- */
+function validar() {
+  const f = []; const ids = dados.produtos.map(p => p.id); if (new Set(ids).size !== ids.length) f.push("Há produtos com o mesmo código.");
+  const sem = dados.produtos.filter(p => !p.img).length; if (sem) f.push(`${sem} produto(s) sem foto não vão aparecer no site.`);
+  if (!dados.loja.fone) f.push("O WhatsApp da loja está vazio."); return f;
+}
+async function publicar() {
+  const f = validar(); if (f.length && !confirm(f.join("\n") + "\n\nPublicar mesmo assim?")) return;
+  ocupado = true; msgs = []; render();
+  try {
+    const texto = gerarDadosJs(dados), usadas = Object.keys(imgs).filter(p => !enviadas.includes(p) && texto.includes(JSON.stringify(p).slice(1, -1)));
+    for (const [i, p] of usadas.entries()) { aviso(`Enviando foto ${i + 1} de ${usadas.length}...`); upLog(); await gravar(p, imgs[p].split(",")[1], "Painel: foto"); enviadas.push(p); }
+    aviso("Enviando dados do site..."); upLog(); await gravar("js/dados.js", b64(enc.encode(texto)), "Painel: atualização do site");
+    publicado = JSON.stringify(dados); salvarEstado(); aviso("Publicado! Em 1 a 2 minutos o site mostra as mudanças.", "ok");
+  } catch (er) { aviso("Não deu certo: " + er.message, "err"); }
+  ocupado = false; render(); upLog();
+}
+const upLog = () => { const l = $("#log"); if (l) l.textContent = msgs.slice(-6).map(m => m.t).join("\n"); };
+function previa() {
+  try { localStorage.setItem("ebs-rascunho", JSON.stringify(dados, (k, v) => typeof v === "string" && imgs[v] ? imgs[v] : v)); } catch (_) { return alert("A prévia ficou grande demais para o navegador. Publique as alterações e veja o site."); }
+  window.open("index.html?previa", "_blank");
+}
+function novoProduto() { ed = { id: "", cat: dados.categorias[0].slug, sub: "", nome: "", desc: "", preco: null, img: "" }; edI = -1; edModo = "padrao"; ed.sub = (cat(ed.cat).subs[0] || [])[0] || ""; render(); }
+function abrirProduto(i) { ed = clone(dados.produtos[i]); edI = i; edModo = !("tamanhos" in ed) ? "padrao" : ed.tamanhos === null ? "nenhum" : "custom"; render(); }
+function salvarProduto() {
+  if (!ed.nome.trim()) return alert("Digite o nome do produto.");
+  if (!ed.img && !confirm("Produto sem foto não aparece no site. Salvar mesmo assim?")) return;
+  const c = cat(ed.cat); if (!ed.sub || !c.subs.find(s => s[0] === ed.sub)) { let s = c.subs.find(s => s[0] === ed.cat + "-outras"); if (!s) { s = [ed.cat + "-outras", "Outras marcas"]; c.subs.push(s); } ed.sub = s[0]; }
+  if (edModo === "padrao") delete ed.tamanhos; else if (edModo === "nenhum") ed.tamanhos = null; else if (!ed.tamanhos || !ed.tamanhos.length) return alert("Digite os tamanhos ou escolha outra opção.");
+  if (!ed.novo) delete ed.novo; if (!ed.promo) delete ed.promo; if (!ed.ficha || !ed.ficha.length) delete ed.ficha; ed.nome = ed.nome.trim();
+  if (edI < 0) { ed.id = unico(slug(ed.nome), dados.produtos.map(p => p.id)); dados.produtos.push(ed); } else dados.produtos[edI] = ed;
+  ed = null; salvarEstado(); render();
+}
+const mover = (a, i, d) => { const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; };
+function acao(a, el) {
+  const i = +el.dataset.i, j = +el.dataset.j;
+  switch (a) {
+    case "aba": aba = el.dataset.i; ed = null; render(); document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-current", t.dataset.i === aba)); return;
+    case "ir-publicar": aba = "publicar"; ed = null; shell(); return;
+    case "novo": return novoProduto();
+    case "editar": return abrirProduto(i);
+    case "cancelar": ed = null; return render();
+    case "salvarprod": return salvarProduto();
+    case "excluir": if (!confirm(`Excluir "${dados.produtos[i].nome}"?`)) return; dados.produtos.splice(i, 1); break;
+    case "rmimg": setK(el.dataset.k, el.dataset.k.includes("slides") ? undefined : ""); break;
+    case "novacat": { const n = prompt("Nome da nova categoria:"); if (!n || !n.trim()) return; dados.categorias.push({ slug: unico(slug(n), dados.categorias.map(c => c.slug)), nome: n.trim(), curto: "", capa: "", tamanhos: null, subs: [] }); break; }
+    case "rmcat": { const c = dados.categorias[i], n = dados.produtos.filter(p => p.cat === c.slug).length; if (n) return alert(`Esta categoria tem ${n} produto(s). Mude ou exclua esses produtos primeiro.`); if (!confirm(`Excluir a categoria "${c.nome}"?`)) return; dados.categorias.splice(i, 1); break; }
+    case "novasub": { const n = prompt("Nome da marca:"); if (!n || !n.trim()) return; const c = dados.categorias[i]; c.subs.push([unico(c.slug + "-" + slug(n), c.subs.map(s => s[0])), n.trim()]); break; }
+    case "rmsub": { const c = dados.categorias[i], s = c.subs[j], n = dados.produtos.filter(p => p.sub === s[0]).length; if (n) return alert(`Esta marca tem ${n} produto(s). Mude esses produtos primeiro.`); c.subs.splice(j, 1); break; }
+    case "subir": case "descer": mover(dados[el.dataset.l], i, a === "subir" ? -1 : 1); break;
+    case "novoslide": dados.slides.push({ tema: "s-asfalto", titulo: "Novo banner", texto: "", cta: [] }); break;
+    case "rmslide": if (!confirm("Excluir este banner?")) return; dados.slides.splice(i, 1); break;
+    case "novacta": (dados.slides[i].cta ||= []).push(["Ver produtos", "#/"]); break;
+    case "rmcta": dados.slides[i].cta.splice(j, 1); break;
+    case "novahora": dados.loja.horarios.push({ dias: "", rotulo: "", texto: "" }); break;
+    case "rmhora": dados.loja.horarios.splice(i, 1); break;
+    case "corpadrao": dados.tema = { ...TEMA_PADRAO }; break;
+    case "previa": return previa();
+    case "publicar": return publicar();
+    case "baixar": { const u = URL.createObjectURL(new Blob([gerarDadosJs(dados)], { type: "text/javascript" })), l = document.createElement("a"); l.href = u; l.download = "dados.js"; l.click(); return; }
+    case "recarregar": return recarregar();
+    case "descartar": if (!confirm("Descartar tudo que não foi publicado?")) return; dados = JSON.parse(publicado); imgs = {}; break;
+    case "sair": cfg = null; return telaLogin();
+  }
+  salvarEstado(); render();
+}
+async function recarregar() {
+  try { const t = await lerRemoto("js/dados.js"); dados = lerDadosJs(t); publicado = JSON.stringify(dados); imgs = {}; salvarEstado(); aviso("Carregado o que está no site.", "ok"); } catch (er) { aviso("Não consegui carregar: " + er.message, "err"); }
+  render();
+}
+async function entrar() {
+  shell();
+  if (cfg) { try { const r = lerDadosJs(await lerRemoto("js/dados.js")); publicado = JSON.stringify(r); if (!localStorage.getItem(LS)) { dados = clone(r); } } catch (er) { aviso("Conectado, mas não consegui ler o site publicado: " + er.message, "err"); } mostrarStatus(); render(); }
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener("click", async ev => {
+  const el = ev.target.closest("[data-a]"); if (!el) return; const a = el.dataset.a, err = t => aviso(t, "err");
+  if (a === "esquecer") { if (confirm("Esquecer a conexão deste aparelho? Você precisará do token de novo.")) { localStorage.removeItem(LSC); telaLogin(); } return; }
+  if (a === "conectar") {
+    const repo = $("#repo").value.trim().replace(/^https?:\/\/github\.com\//, ""), branch = $("#branch").value.trim() || "main", token = $("#token").value.trim(), senha = $("#senha").value;
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return err("Escreva o repositório assim: usuario/nome"); if (!token) return err("Cole o token do GitHub."); if (senha.length < 10) return err("A senha precisa de pelo menos 10 caracteres.");
+    localStorage.setItem(LSC, JSON.stringify({ repo, branch, cripto: await cifrar(token, senha) })); cfg = { repo, branch, token }; return entrar();
+  }
+  if (a === "entrar") { try { const s = JSON.parse(localStorage.getItem(LSC)); cfg = { repo: s.repo, branch: s.branch, token: await decifrar(s.cripto, $("#senha").value) }; return entrar(); } catch (_) { return err("Senha errada."); } }
+  if (!dados) return; acao(a, el);
+});
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if (el.id === "busca") { busca = el.value; const p = el.selectionStart; render(); const n = $("#busca"); n.focus(); n.setSelectionRange(p, p); return; }
+  if (el.dataset.k && el.type !== "checkbox" && el.tagName !== "SELECT") aplicar(el, false);
+  if (el.dataset.destv) { const p = el.dataset.destv, b = getK(p), zap = b[1].startsWith("zap:"); setK(p + ".1", zap ? "zap:" + el.value : el.value); salvarEstado(); mostrarStatus(); }
+});
+document.addEventListener("change", async ev => {
+  const el = ev.target;
+  if (el.id === "fcat") { filtroCat = el.value; return render(); }
+  if (el.id === "modo") { edModo = el.value; if (edModo === "custom" && !ed.tamanhos) ed.tamanhos = []; return render(); }
+  if (el.dataset.marca && el.value === "__nova") { const n = prompt("Nome da marca:"); if (n && n.trim()) { const c = cat(ed.cat); const s = [unico(c.slug + "-" + slug(n), c.subs.map(s => s[0])), n.trim()]; c.subs.push(s); ed.sub = s[0]; salvarEstado(); } return render(); }
+  if (el.dataset.dest) { const p = el.dataset.dest, v = el.value, ant = getK(p)[1]; setK(p + ".1", v === "zap" ? "zap:" + (ant.startsWith("zap:") ? ant.slice(4) : "Fala, EBS!") : v === "http" ? "https://" : v); salvarEstado(); return render(); }
+  if (el.dataset.dia != null) { const h = dados.loja.horarios[+el.dataset.dia], s = new Set(h.dias.split(",").filter(Boolean)); el.checked ? s.add(el.value) : s.delete(el.value); h.dias = [...s].sort().join(","); salvarEstado(); return mostrarStatus(); }
+  if (el.dataset.up && el.files[0]) {
+    try { const r = await lerImagem(el.files[0], +el.dataset.max), nome = el.dataset.up.startsWith("ed.") ? ed.nome || "produto" : el.dataset.up.split(".").pop(), path = `images/${el.dataset.pasta}/${slug(nome)}-${Date.now().toString(36)}.${r.ext}`; imgs[path] = r.url; setK(el.dataset.up, path); salvarEstado(); render(); } catch (_) { aviso("Não consegui ler essa imagem. Tente outro arquivo (JPG, PNG ou WebP).", "err"); }
+    return;
+  }
+  if (el.dataset.k) aplicar(el, true);
+});
+function aplicar(el, fim) {
+  let v = el.type === "checkbox" ? el.checked : el.value;
+  switch (el.dataset.t) {
+    case "num": v = String(v).trim() === "" ? null : Number(String(v).replace(",", ".")); if (v !== null && isNaN(v)) return; break;
+    case "lista": v = String(v).split(",").map(x => x.trim()).filter(Boolean); if (!v.length && !el.dataset.k.startsWith("ed.")) v = null; break;
+    case "linhas": v = String(v).split("\n").map(x => x.trim()).filter(Boolean); break;
+    case "logo": v = el.checked ? "logo" : undefined; break;
+  }
+  setK(el.dataset.k, v); if (el.dataset.limpa) { ed[el.dataset.limpa] = (cat(ed.cat).subs[0] || [])[0] || ""; }
+  salvarEstado(); mostrarStatus(); if (fim && el.dataset.r) render();
+}
+
+(function iniciar() {
+  let st = null; try { st = JSON.parse(localStorage.getItem(LS)); } catch (_) {}
+  dados = st && st.dados ? st.dados : clone(window.DADOS); imgs = (st && st.imgs) || {}; enviadas = (st && st.enviadas) || [];
+  enviadas.forEach(p => { delete imgs[p]; }); enviadas = [];
+  publicado = JSON.stringify(window.DADOS); telaLogin();
+})();
+</script>
+</body>
+</html>

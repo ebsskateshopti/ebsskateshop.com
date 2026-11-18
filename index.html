@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#26282B">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="EBS Skateshop">
+<meta property="og:title" content="EBS Skateshop | Seu skate com quem entende">
+<meta property="og:description" content="Skateshop da galera: skates montados, shapes, trucks, rodas, tênis, roupas e proteção. Escolha no site e peça pelo WhatsApp. Sacramenta, Belém-PA.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SportingGoodsStore","name":"EBS Skateshop","telephone":"+55 91 98501-6702","description":"Skateshop da galera: skates montados, shapes, trucks, rodas, tênis, roupas e proteção.","openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"18:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:30","closes":"17:00"}],"address":{"@type":"PostalAddress","streetAddress":"Passagem Santos Dumont, 149","addressLocality":"Belém","addressRegion":"PA","postalCode":"66123-430","addressCountry":"BR"},"sameAs":["https://instagram.com/ebsskateshop"]}</script>
+<title>EBS Skateshop | Seu skate com quem entende</title>
+<meta name="description" content="Skateshop da galera: skates montados, shapes, trucks, rodas, tênis, roupas e proteção. Escolha no site e peça pelo WhatsApp. Sacramenta, Belém-PA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="gAcc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3B8"/><stop offset=".55" stop-color="#FBB6A6"/><stop offset="1" stop-color="#F5707A"/></linearGradient></defs></svg>
+
+<div class="faixa" data-txt="faixa">Aceitamos cartões</div>
+<header>
+  <div class="wrap bar">
+    <a href="#/" class="logo" aria-label="EBS Skateshop, início"><img class="logo-img" alt="" width="48" height="48"></a>
+    <button class="busca-campo" id="abrir-busca" aria-label="Buscar produtos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span>Buscar produtos</span>
+    </button>
+    <button class="icon-btn" id="abrir-carrinho" aria-label="Abrir carrinho">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1.2 12.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3L5 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+      <span class="badge" id="contador" hidden>0</span>
+    </button>
+    <button class="icon-btn" id="abrir-menu" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h11M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+<nav class="nav-inline" id="nav-inline" aria-label="Categorias"></nav>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="sheet" id="menu" aria-label="Categorias" aria-hidden="true" inert>
+  <div class="sheet-head">
+    <strong>Categorias</strong>
+    <button class="icon-btn" id="fechar-menu" aria-label="Fechar menu">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <nav class="menu" id="menu-nav"></nav>
+  <p class="sheet-foot slogan-mini" data-txt="slogan">seu skate com quem entende</p>
+</aside>
+
+<aside class="sheet right" id="carrinho" aria-label="Carrinho" aria-hidden="true" inert>
+  <div class="sheet-head">
+    <strong>Carrinho</strong>
+    <button class="icon-btn" id="fechar-carrinho" aria-label="Fechar carrinho">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="cart-body" id="lista-carrinho"></div>
+  <div class="sheet-cta" id="cta-carrinho" hidden>
+    <div class="cart-total"><span>Total estimado</span><span id="total">R$ 0,00</span></div>
+    <p class="note" id="nota-total"></p>
+    <button class="btn btn-red" id="enviar-pedido">Enviar pedido pelo WhatsApp</button>
+    <p class="note">Você confirma disponibilidade, pagamento e entrega direto com a loja.</p>
+  </div>
+</aside>
+
+<div class="busca" id="busca" role="dialog" aria-label="Buscar produtos" aria-hidden="true" inert>
+  <div class="busca-bar">
+    <input id="busca-input" type="search" placeholder="Buscar: shape, truck, tênis..." autocomplete="off" aria-label="Buscar produtos">
+    <button class="icon-btn" id="fechar-busca" aria-label="Fechar busca">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="busca-corpo" id="busca-corpo"></div>
+</div>
+
+<main>
+  <noscript><p style="padding:2rem 1rem;text-align:center">Este site precisa de JavaScript. Abra o arquivo em um navegador comum (Chrome ou Firefox).</p></noscript>
+
+  <div class="view" id="v-home">
+    <section class="carrossel" aria-roledescription="carrossel" aria-label="Destaques da loja">
+      <div class="slides" id="slides"></div>
+      <div class="car-ctrl">
+        <div class="wrap">
+          <div class="dots" id="dots"></div>
+          <div class="arrows">
+            <button id="car-ant" aria-label="Slide anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button id="car-prox" aria-label="Próximo slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="info-faixa"><div class="wrap" id="info-faixa"></div></div>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 data-txt="tituloCategorias">O que tem na loja</h2>
+          <p>Escolhe, bota no carrinho e fecha pelo zap.</p>
+          <i class="ebs-mark" aria-hidden="true"></i>
+        </div>
+        <div class="tiles" id="tiles"></div>
+      </div>
+    </section>
+
+    <section style="padding-top:0" id="sec-marcas">
+      <div class="wrap">
+        <div class="sec-head"><h2 data-txt="tituloMarcas">Marcas na loja</h2></div>
+        <figure class="marcas"><img id="img-marcas" width="772" height="378" loading="lazy" alt="Marcas da loja: Hondar, ÖUS, Dramd, Drop Dead, Chaze, Stronger, Brats, Core e Nineclouds"></figure>
+      </div>
+    </section>
+
+    <section class="claro" id="sec-prat" hidden>
+      <div class="wrap" id="prateleiras"></div>
+    </section>
+
+    <section class="quinta" id="sec-quinta" hidden>
+      <div class="wrap">
+        <div class="prat-head"><h2>Quinta da <span class="marca">Oferta</span></h2><b class="selo">Toda quinta</b></div>
+        <p class="quinta-txt">Toda quinta, um produto entra em super oferta.</p>
+        <div class="trilho" id="trilho-quinta"></div>
+        <div class="ctas-row" style="margin-top:1.5rem"><a class="btn btn-red" href="#/promocoes">Ver todas as ofertas</a></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="v-catalogo" hidden>
+    <section>
+      <div class="wrap">
+        <p class="breadcrumb"><a href="#/">Início</a> / <span id="bc-atual"></span></p>
+        <h1 class="page-title" id="titulo-catalogo"></h1>
+        <div class="subcats" id="subcats"></div>
+        <div class="grid" id="grid-produtos"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="view" id="v-produto" hidden>
+    <section>
+      <div class="wrap" id="produto-conteudo"></div>
+    </section>
+  </div>
+
+  <div class="view" id="v-contato" hidden>
+    <section>
+      <div class="wrap loja">
+        <div>
+          <p class="breadcrumb"><a href="#/">Início</a> / Contato</p>
+          <h1 class="page-title">Vem pra <span class="marca">loja</span></h1>
+          <address data-end></address>
+          <div class="ctas-row">
+            <a class="btn btn-red" data-maps href="#" target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a>
+            <a class="btn btn-linha" data-fone href="#" target="_blank" rel="noopener noreferrer"></a>
+          </div>
+        </div>
+        <div>
+          <div class="fachada-ph" data-fachada><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><mark class="pend">foto da fachada a enviar</mark></div>
+          <h3 class="horarios-t">Horários</h3>
+          <dl data-horarios></dl>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<section id="encontrar" aria-labelledby="encontrar-titulo">
+  <div class="wrap">
+    <div>
+      <h2 id="encontrar-titulo">Como nos <span class="marca">encontrar</span></h2>
+      <address data-end></address>
+      <div class="ctas-row">
+        <a class="btn btn-red" data-rota href="#" target="_blank" rel="noopener noreferrer">Traçar rota</a>
+        <a class="btn btn-linha" data-maps href="#" target="_blank" rel="noopener noreferrer">Abrir no Google Maps</a>
+      </div>
+      <dl data-horarios></dl>
+    </div>
+    <div>
+      <a class="mapa-cartao" data-maps href="#" target="_blank" rel="noopener noreferrer" aria-label="Ver a EBS Skateshop no mapa (abre o Google Maps)">
+        <div class="fachada-ph" data-fachada><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg><mark class="pend">foto da fachada a enviar</mark></div>
+        <span class="btn btn-red">Ver no mapa</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <strong class="rod-nome">EBS Skateshop</strong><br>
+      <span class="slogan-mini" data-txt="slogan">seu skate com quem entende</span><br>
+      <a href="https://instagram.com/ebsskateshop" target="_blank" rel="noopener noreferrer">@ebsskateshop</a><br><a data-fone href="#" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+    <div><span data-end></span><br><a href="#encontrar" data-acao="enc">Como nos encontrar</a><br>© EBS Skateshop</div>
+  </div>
+  <i class="ebs-mark foot-mark" aria-hidden="true"></i>
+</footer>
+
+<a class="zap-fixo" data-zap="Fala, EBS!" href="#" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8.5 9.5h7M8.5 12.5h4.5" stroke-linecap="round"/></svg>
+</a>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/dados.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
